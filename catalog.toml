@@ -1,0 +1,12 @@
+# Kura action catalog — published source.
+# Add this repo to Kura with the raw URL of this file.
+# Scripts live in scripts/ beside this file. Flat, no subfolders.
+
+[[action]]
+id = "spot-adapter-fix-24h2"
+name = "Reset print spooler"
+category = "troubleshoot"
+description = "Removes the WinHTTPAutoProxySvc dependency from WcmSvc that breaks networking on 24H2, and sets the proxy service back to manual start."
+requires_admin = true
+destructive = true
+run = { type = "script", script = "adapter-fix-24h2.ps1" }
