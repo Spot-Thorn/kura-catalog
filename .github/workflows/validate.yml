@@ -37,12 +37,12 @@ jobs:
                   name = run.get('script', '')
                   if any(c in name for c in ('..', '/', '\\', ':')):
                       problems.append(f'{aid}: illegal script name {name!r}')
-                  elif not (root / 'scripts' / name).is_file():
-                      problems.append(f'{aid}: scripts/{name} does not exist')
+                  elif not (root / 'Scripts' / name).is_file():
+                      problems.append(f'{aid}: Scripts/{name} does not exist')
           used = {a.get('run', {}).get('script') for a in actions}
-          for f in sorted((root / 'scripts').glob('*.ps1')):
+          for f in sorted((root / 'Scripts').glob('*.ps1')):
               if f.name not in used:
-                  print(f'::warning::scripts/{f.name} is not used by any action')
+                  print(f'::warning::Scripts/{f.name} is not used by any action')
           if problems:
               sys.exit('\n'.join(problems))
           print(f'{len(actions)} action(s) OK')
@@ -50,8 +50,8 @@ jobs:
 
       - name: No self-elevation
         run: |
-          if grep -rniE "Verb[[:space:]]+RunAs" scripts/; then
-            echo "::error::scripts must not self-elevate — Kura handles UAC"
+          if grep -rniE "Verb[[:space:]]+RunAs" Scripts/; then
+            echo "::error::Scripts must not self-elevate — Kura handles UAC"
             exit 1
           fi
 
@@ -59,7 +59,7 @@ jobs:
         shell: pwsh
         run: |
           Install-Module PSScriptAnalyzer -Force -Scope CurrentUser
-          $all = Invoke-ScriptAnalyzer -Path scripts -Recurse
+          $all = Invoke-ScriptAnalyzer -Path Scripts -Recurse
           if ($all) { $all | Format-Table -AutoSize | Out-String | Write-Host }
           $errors = $all | Where-Object Severity -eq 'Error'
           if ($errors) { throw "$($errors.Count) analyzer error(s)" }
