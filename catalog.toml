@@ -4,9 +4,9 @@
 
 [[action]]
 id = "spot-adapter-fix-24h2"
-name = "Reset print spooler"
+name = "Fix Network Adapters missing after (Win 24H2)"
 category = "troubleshoot"
 description = "Removes the WinHTTPAutoProxySvc dependency from WcmSvc that breaks networking on 24H2, and sets the proxy service back to manual start."
 requires_admin = true
 destructive = true
-run = { type = "Script", script = "adapter-fix-24h2.ps1" }
+run = { type = "script", script = "adapter-fix-24h2.ps1" }
