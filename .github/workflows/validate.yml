@@ -1,0 +1,65 @@
+name: validate
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  catalog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Catalog sanity check
+        run: |
+          python3 - <<'PY'
+          import tomllib, pathlib, sys
+          root = pathlib.Path('.')
+          data = tomllib.loads((root / 'catalog.toml').read_text(encoding='utf-8'))
+          actions = data.get('action', [])
+          if not actions:
+              sys.exit('catalog.toml has no [[action]] entries')
+          problems, seen = [], set()
+          for a in actions:
+              aid = a.get('id')
+              if not aid:
+                  problems.append('an action has no id')
+                  continue
+              if aid in seen:
+                  problems.append(f'duplicate id: {aid}')
+              seen.add(aid)
+              for field in ('name', 'category', 'description', 'run'):
+                  if field not in a:
+                      problems.append(f'{aid}: missing {field}')
+              run = a.get('run', {})
+              if run.get('type') == 'script':
+                  name = run.get('script', '')
+                  if any(c in name for c in ('..', '/', '\\', ':')):
+                      problems.append(f'{aid}: illegal script name {name!r}')
+                  elif not (root / 'scripts' / name).is_file():
+                      problems.append(f'{aid}: scripts/{name} does not exist')
+          used = {a.get('run', {}).get('script') for a in actions}
+          for f in sorted((root / 'scripts').glob('*.ps1')):
+              if f.name not in used:
+                  print(f'::warning::scripts/{f.name} is not used by any action')
+          if problems:
+              sys.exit('\n'.join(problems))
+          print(f'{len(actions)} action(s) OK')
+          PY
+
+      - name: No self-elevation
+        run: |
+          if grep -rniE "Verb[[:space:]]+RunAs" scripts/; then
+            echo "::error::scripts must not self-elevate — Kura handles UAC"
+            exit 1
+          fi
+
+      - name: PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Install-Module PSScriptAnalyzer -Force -Scope CurrentUser
+          $all = Invoke-ScriptAnalyzer -Path scripts -Recurse
+          if ($all) { $all | Format-Table -AutoSize | Out-String | Write-Host }
+          $errors = $all | Where-Object Severity -eq 'Error'
+          if ($errors) { throw "$($errors.Count) analyzer error(s)" }
