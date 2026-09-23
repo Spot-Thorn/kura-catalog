@@ -1,6 +1,6 @@
 # kura-catalog
 
-[![validate](https://github.com/Spot-Thorn/kura-catalog/actions/workflows/validate.yml/badge.svg)](https://github.com/Spot-Thorn/kura-catalog/actions/workflows/validate.yml)
+[![validate](https://github.com/Spot-Thorn/kura-catalog/actions/workflows/validate.yml/badge.svg?branch=main)](https://github.com/Spot-Thorn/kura-catalog/actions/workflows/validate.yml)
 
 ## Adding this source
 
